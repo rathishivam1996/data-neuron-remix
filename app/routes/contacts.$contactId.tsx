@@ -1,19 +1,25 @@
-import type { LoaderFunctionArgs } from '@remix-run/node';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { Form, useLoaderData } from '@remix-run/react';
-import type { FunctionComponent } from 'react';
-
+import { Form, useFetcher, useLoaderData } from '@remix-run/react';
 import invariant from 'tiny-invariant';
-import { ContactRecord, getContact } from '../data';
+
+import type { ContactRecord } from '../data';
+import { getContact, updateContact } from '../data';
+
+export const action = async ({ params, request }: ActionFunctionArgs) => {
+  invariant(params.contactId, 'Missing contactId param');
+  const formData = await request.formData();
+  return updateContact(params.contactId, {
+    favorite: formData.get('favorite') === 'true'
+  });
+};
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
-  // type narrowing using tiny invariant as contactId is string or undefined
   invariant(params.contactId, 'Missing contactId param');
   const contact = await getContact(params.contactId);
-
-  // maybe no cantact with this id
-  if (!contact) throw new Response('Not Found', { status: 404 });
-
+  if (!contact) {
+    throw new Response('Not Found', { status: 404 });
+  }
   return json({ contact });
 };
 
@@ -44,9 +50,7 @@ export default function Contact() {
 
         {contact.twitter ? (
           <p>
-            <a href={`https://twitter.com/${contact.twitter}`}>
-              {contact.twitter}
-            </a>
+            <a href={`https://twitter.com/${contact.twitter}`}>{contact.twitter}</a>
           </p>
         ) : null}
 
@@ -61,14 +65,11 @@ export default function Contact() {
             action="destroy"
             method="post"
             onSubmit={(event) => {
-              const response = confirm(
-                'Please confirm you want to delete this record.'
-              );
+              const response = confirm('Please confirm you want to delete this record.');
               if (!response) {
                 event.preventDefault();
               }
-            }}
-          >
+            }}>
             <button type="submit">Delete</button>
           </Form>
         </div>
@@ -77,20 +78,20 @@ export default function Contact() {
   );
 }
 
-const Favorite: FunctionComponent<{
-  contact: Pick<ContactRecord, 'favorite'>;
-}> = ({ contact }) => {
-  const favorite = contact.favorite;
+function Favorite({ contact }: { contact: Pick<ContactRecord, 'favorite'> }) {
+  const fetcher = useFetcher();
+  const favorite = fetcher.formData
+    ? fetcher.formData.get('favorite') === 'true'
+    : contact.favorite;
 
   return (
-    <Form method="post">
+    <fetcher.Form method="post">
       <button
         aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
         name="favorite"
-        value={favorite ? 'false' : 'true'}
-      >
+        value={favorite ? 'false' : 'true'}>
         {favorite ? '★' : '☆'}
       </button>
-    </Form>
+    </fetcher.Form>
   );
-};
+}
