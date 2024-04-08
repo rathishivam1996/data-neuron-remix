@@ -1,35 +1,16 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { json, redirect } from '@remix-run/node';
-import { Form, useLoaderData, useNavigate } from '@remix-run/react';
-import invariant from 'tiny-invariant';
-
+import { Form, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
-import { ContactMutation, createOrUpdate, getContact } from '~/data';
+import { Contact, ContactMutation } from '~/data2';
 
-export const loader = async ({ params }: LoaderFunctionArgs) => {
-  invariant(params.contactId, 'Missing contactId param');
-  const contact = await getContact(params.contactId);
-  return json({ contact: contact });
-};
+interface ContactFormProps {
+  contact: Contact;
+  onSubmit: (data: ContactMutation) => void;
+}
 
-export const action = async ({ params, request }: ActionFunctionArgs) => {
-  invariant(params.contactId, 'Missing contactId param');
-  const formData = await request.formData();
-  const updates: { [k: string]: FormDataEntryValue } = Object.fromEntries(formData);
-
-  const contactUpdates: ContactMutation = {
-    ...updates
-  } as unknown as ContactMutation;
-
-  await createOrUpdate(params.contactId, contactUpdates);
-  return redirect(`/contacts/${params.contactId}`);
-};
-
-export default function EditContact() {
-  const { contact } = useLoaderData<typeof loader>();
-  const navigate = useNavigate();
+export default function ContactForm({ contact, onSubmit }: ContactFormProps) {
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState('');
+  const navigate = useNavigate();
 
   const handleNewSkill = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') {
@@ -48,7 +29,7 @@ export default function EditContact() {
   };
 
   return (
-    <Form id="contact-form" method="post">
+    <Form id="contact-form" method="post" onSubmit={onSubmit}>
       <p>
         <span>Name</span>
         <input
