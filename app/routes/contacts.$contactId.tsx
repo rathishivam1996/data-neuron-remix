@@ -2,8 +2,8 @@ import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
 import { Form, useFetcher, useLoaderData } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 
-import { getContact, updateContact } from '~/data';
-import { ContactRecord } from '~/db/schema.server';
+import { ContactRecord, getContact, updateContact } from '~/data';
+// import { ContactRecord } from '~/db/schema.server';
 
 // export const action = async ({ params, request }: ActionFunctionArgs) => {
 //   invariant(params.contactId, 'Missing contactId param');
