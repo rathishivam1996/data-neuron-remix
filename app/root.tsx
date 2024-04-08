@@ -13,11 +13,12 @@ import {
   useNavigation,
   useSubmit
 } from '@remix-run/react';
+import { v4 as uuidv4 } from 'uuid';
 
 import tailwindCss from '~/tailwind.css';
 import appCss from './app.css';
-import { createEmptyContact, getContacts } from './data';
 import { useEffect } from 'react';
+import { findAllContacts } from './api';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwindCss },
@@ -27,13 +28,15 @@ export const links: LinksFunction = () => [
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const q = url.searchParams.get('q');
-  const contacts = await getContacts(q);
+
+  const contacts = await findAllContacts(q);
   return json({ contacts, q });
 };
 
 export const action = async () => {
-  const contact = await createEmptyContact();
-  return redirect(`/contacts/${contact.id}/edit`);
+  // const contact = await createEmptyContact();
+  const uuid = uuidv4();
+  return redirect(`/contacts/${uuid}/edit`);
 };
 
 export default function App() {
@@ -59,7 +62,7 @@ export default function App() {
       </head>
       <body className="bg-white">
         <div id="sidebar">
-          <h1>Remix Contacts</h1>
+          <h1>Data Neuron Contacts</h1>
           <div>
             <Form
               id="search-form"
@@ -92,10 +95,10 @@ export default function App() {
                       className={({ isActive, isPending }) =>
                         isActive ? 'active' : isPending ? 'pending' : ''
                       }
-                      to={`contacts/${contact.id}`}>
-                      {contact.first || contact.last ? (
+                      to={`contacts/${contact.uuid}`}>
+                      {contact.firstName || contact.lastName ? (
                         <>
-                          {contact.first} {contact.last}
+                          {contact.firstName} {contact.lastName}
                         </>
                       ) : (
                         <i>No Name</i>

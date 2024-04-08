@@ -8,8 +8,9 @@
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve build",
     "typecheck": "tsc",
-    "db:migrations": "drizzle-kit generate:sqlite --out ./app/db/migrations --schema ./app/db/schema.server.ts",
-    "routes:gen": "routes-gen -d @routes-gen/remix"
+    "db:migrations": "drizzle-kit generate:sqlite --config=app/db/drizzle.config.ts",
+    "routes:gen": "routes-gen -d @routes-gen/remix",
+    "drizzle:studio": "npx drizzle-kit studio --config=app/db/drizzle.config.ts"
   },
   "dependencies": {
     "@remix-run/node": "^2.6.0",
@@ -28,6 +29,7 @@
     "routes-gen": "^0.6.1",
     "sort-by": "^1.2.0",
     "tiny-invariant": "^1.3.1",
+    "uuidv4": "^6.2.13",
     "zod": "^3.22.4"
   },
   "devDependencies": {

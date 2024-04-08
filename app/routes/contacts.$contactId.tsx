@@ -3,24 +3,29 @@ import { json } from '@remix-run/node';
 import { Form, useFetcher, useLoaderData } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 
-import type { ContactRecord } from '../data';
-import { getContact, updateContact } from '../data';
+import { findContact, updateContact } from '~/api';
+import { ContactRecord } from '~/db/schema.server';
 
 export const action = async ({ params, request }: ActionFunctionArgs) => {
   invariant(params.contactId, 'Missing contactId param');
   const formData = await request.formData();
+
   return updateContact(params.contactId, {
-    favorite: formData.get('favorite') === 'true'
+    favorite: formData.get('favorite') === 'true',
+    updatedOn: new Date()
   });
+  // return updateContact(params.contactId, {
+  //   favorite: formData.get('favorite') === 'true'
+  // });
 };
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   invariant(params.contactId, 'Missing contactId param');
-  const contact = await getContact(params.contactId);
+  const contact = await findContact(params.contactId);
   if (!contact) {
     throw new Response('Not Found', { status: 404 });
   }
-  return json({ contact });
+  return json({ contact: contact });
 };
 
 export default function Contact() {
@@ -30,17 +35,17 @@ export default function Contact() {
     <div id="contact">
       <div>
         <img
-          alt={`${contact.first} ${contact.last} avatar`}
-          key={contact.avatar}
-          src={contact.avatar}
+          alt={`${contact.firstName} ${contact.lastName} avatar`}
+          key={contact.avatarUrl}
+          src={contact.avatarUrl ?? ''}
         />
       </div>
 
       <div>
         <h1>
-          {contact.first || contact.last ? (
+          {contact.firstName || contact.lastName ? (
             <>
-              {contact.first} {contact.last}
+              {contact.firstName} {contact.lastName}
             </>
           ) : (
             <i>No Name</i>
@@ -48,9 +53,9 @@ export default function Contact() {
           <Favorite contact={contact} />
         </h1>
 
-        {contact.twitter ? (
+        {contact.linkedInProfile ? (
           <p>
-            <a href={`https://twitter.com/${contact.twitter}`}>{contact.twitter}</a>
+            <a href={`https://twitter.com/${contact.linkedInProfile}`}>{contact.linkedInProfile}</a>
           </p>
         ) : null}
 
