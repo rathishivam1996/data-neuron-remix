@@ -18,18 +18,26 @@ import { v4 as uuidv4 } from 'uuid';
 import tailwindCss from '~/tailwind.css';
 import appCss from './app.css';
 import { useEffect } from 'react';
-import { findAllContacts } from './api';
+// import { findAllContacts } from './api';
+import { getContacts } from './data';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwindCss },
   { rel: 'stylesheet', href: appCss }
 ];
 
+// export const loader = async ({ request }: LoaderFunctionArgs) => {
+//   const url = new URL(request.url);
+//   const q = url.searchParams.get('q');
+
+//   const contacts = await findAllContacts(q);
+//   return json({ contacts, q });
+// };
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const q = url.searchParams.get('q');
-
-  const contacts = await findAllContacts(q);
+  const contacts = await getContacts(q);
   return json({ contacts, q });
 };
 
@@ -90,7 +98,7 @@ export default function App() {
             {contacts.length ? (
               <ul>
                 {contacts.map((contact) => (
-                  <li key={contact.id}>
+                  <li key={contact.uuid}>
                     <NavLink
                       className={({ isActive, isPending }) =>
                         isActive ? 'active' : isPending ? 'pending' : ''

@@ -4,13 +4,22 @@ import { Form, useLoaderData, useNavigate } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 
 import { useState } from 'react';
-import { findContact, insertOrUpdate } from '~/api';
-import { ContactRecord } from '~/db/schema.server';
+// import { findContact, insertOrUpdate } from '~/api';
+import { ContactMutation, createOrUpdate, getContact } from '~/data';
+
+// export const loader = async ({ params }: LoaderFunctionArgs) => {
+//   invariant(params.contactId, 'Missing contactId param');
+//   // const contact = await getContact(params.contactId);
+//   const contact = await findContact(params.contactId);
+//   // if (!contact) {
+//   //   throw new Response('Not Found', { status: 404 });
+//   // }
+//   return json({ contact: contact });
+// };
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   invariant(params.contactId, 'Missing contactId param');
-  // const contact = await getContact(params.contactId);
-  const contact = await findContact(params.contactId);
+  const contact = await getContact(params.contactId);
   // if (!contact) {
   //   throw new Response('Not Found', { status: 404 });
   // }
@@ -19,28 +28,42 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 
 export const action = async ({ params, request }: ActionFunctionArgs) => {
   invariant(params.contactId, 'Missing contactId param');
-
   const formData = await request.formData();
-
   const updates: { [k: string]: FormDataEntryValue } = Object.fromEntries(formData);
 
-  // Parse skills from JSON string to array
-  if (typeof updates.skills === 'string') {
-    updates.skills = JSON.parse(updates.skills);
-  }
+  // Cast updates to ContactMutation type
+  const contactUpdates: ContactMutation = {
+    ...updates
+  } as unknown as ContactMutation;
 
-  // Use params.userId as the UUID
-
-  const contactUpdates: ContactRecord = updates as unknown as ContactRecord;
-  contactUpdates.createdOn = new Date();
-  contactUpdates.updatedOn = new Date();
-  contactUpdates.uuid = params.contactId;
-
-  insertOrUpdate(contactUpdates);
-
-  // await updateContact(params.contactId, updates);
+  await createOrUpdate(params.contactId, contactUpdates);
   return redirect(`/contacts/${params.contactId}`);
 };
+
+// export const action = async ({ params, request }: ActionFunctionArgs) => {
+//   invariant(params.contactId, 'Missing contactId param');
+
+//   const formData = await request.formData();
+
+//   const updates: { [k: string]: FormDataEntryValue } = Object.fromEntries(formData);
+
+//   // Parse skills from JSON string to array
+//   if (typeof updates.skills === 'string') {
+//     updates.skills = JSON.parse(updates.skills);
+//   }
+
+//   // Use params.userId as the UUID
+
+//   const contactUpdates: ContactRecord = updates as unknown as ContactRecord;
+//   contactUpdates.createdOn = new Date();
+//   contactUpdates.updatedOn = new Date();
+//   contactUpdates.uuid = params.contactId;
+
+//   insertOrUpdate(contactUpdates);
+
+//   // await updateContact(params.contactId, updates);
+//   return redirect(`/contacts/${params.contactId}`);
+// };
 
 export default function EditContact() {
   const { contact } = useLoaderData<typeof loader>();

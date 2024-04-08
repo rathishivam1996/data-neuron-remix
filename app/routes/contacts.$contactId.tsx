@@ -1,31 +1,50 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { json } from '@remix-run/node';
+import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
 import { Form, useFetcher, useLoaderData } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 
-import { findContact, updateContact } from '~/api';
+import { getContact, updateContact } from '~/data';
 import { ContactRecord } from '~/db/schema.server';
+
+// export const action = async ({ params, request }: ActionFunctionArgs) => {
+//   invariant(params.contactId, 'Missing contactId param');
+//   const formData = await request.formData();
+
+//   return updateContact(params.contactId, {
+//     favorite: formData.get('favorite') === 'true',
+//     updatedOn: new Date()
+//   });
+//   // return updateContact(params.contactId, {
+//   //   favorite: formData.get('favorite') === 'true'
+//   // });
+// };
+
+// export const loader = async ({ params }: LoaderFunctionArgs) => {
+//   invariant(params.contactId, 'Missing contactId param');
+//   const contact = await findContact(params.contactId);
+//   if (!contact) {
+//     throw new Response('Not Found', { status: 404 });
+//   }
+//   return json({ contact: contact });
+// };
 
 export const action = async ({ params, request }: ActionFunctionArgs) => {
   invariant(params.contactId, 'Missing contactId param');
   const formData = await request.formData();
-
   return updateContact(params.contactId, {
     favorite: formData.get('favorite') === 'true',
     updatedOn: new Date()
   });
-  // return updateContact(params.contactId, {
-  //   favorite: formData.get('favorite') === 'true'
-  // });
 };
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   invariant(params.contactId, 'Missing contactId param');
-  const contact = await findContact(params.contactId);
+  const contact = await getContact(params.contactId);
+  console.log(contact, 'cccccccccccc');
   if (!contact) {
+    console.log('dddddddddddddddddddd');
     throw new Response('Not Found', { status: 404 });
   }
-  return json({ contact: contact });
+  return json({ contact });
 };
 
 export default function Contact() {
