@@ -28,7 +28,7 @@ To install the necessary libraries, run the following command:
 ```bash
 npm install
 
-## Usage
+## usage
 To start the application, run the following command:
 
 ```bash
