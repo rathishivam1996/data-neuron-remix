@@ -1,13 +1,12 @@
 import { Form, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
-import { Contact, ContactMutation } from '~/data2';
+import { Contact } from '~/data2';
 
 interface ContactFormProps {
-  contact: Contact;
-  onSubmit: (data: ContactMutation) => void;
+  contact: Contact | Record<string, never>;
 }
 
-export default function ContactForm({ contact, onSubmit }: ContactFormProps) {
+export default function ContactForm({ contact }: Readonly<ContactFormProps>) {
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState('');
   const navigate = useNavigate();
@@ -29,11 +28,11 @@ export default function ContactForm({ contact, onSubmit }: ContactFormProps) {
   };
 
   return (
-    <Form id="contact-form" method="post" onSubmit={onSubmit}>
+    <Form id="contact-form" method="post">
       <p>
         <span>Name</span>
         <input
-          defaultValue={contact?.firstName ?? ''}
+          defaultValue={contact.firstName ?? ''}
           aria-label="First name"
           name="firstName"
           type="text"
@@ -101,6 +100,10 @@ export default function ContactForm({ contact, onSubmit }: ContactFormProps) {
           Cancel
         </button>
       </p>
+      <p>{contact?.uuid ?? ''}</p>
+      <p>{contact?.createdOn?.toISOString() ?? ''}</p>
+      <p>{contact?.updatedOn?.toISOString() ?? ''}</p>
+      <p>{contact?.favourite ?? ''}</p>
     </Form>
   );
 }
