@@ -1,9 +1,9 @@
 import { Form, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
-import { Contact } from '~/data2';
+import { ContactRecord } from '~/data2';
 
 interface ContactFormProps {
-  contact: Contact | Record<string, never>;
+  contact: ContactRecord | Record<string, never>;
 }
 
 export default function ContactForm({ contact }: Readonly<ContactFormProps>) {

@@ -1,8 +1,8 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
 import { Form, useFetcher, useLoaderData } from '@remix-run/react';
 import invariant from 'tiny-invariant';
+import { ContactRecord, getContact, updateContact } from '~/data2';
 
-import { ContactRecord, getContact, updateContact } from '~/data';
 // import { ContactRecord } from '~/db/schema.server';
 
 // export const action = async ({ params, request }: ActionFunctionArgs) => {
@@ -10,11 +10,11 @@ import { ContactRecord, getContact, updateContact } from '~/data';
 //   const formData = await request.formData();
 
 //   return updateContact(params.contactId, {
-//     favorite: formData.get('favorite') === 'true',
+//     favourite: formData.get('favourite') === 'true',
 //     updatedOn: new Date()
 //   });
 //   // return updateContact(params.contactId, {
-//   //   favorite: formData.get('favorite') === 'true'
+//   //   favourite: formData.get('favourite') === 'true'
 //   // });
 // };
 
@@ -31,7 +31,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   invariant(params.contactId, 'Missing contactId param');
   const formData = await request.formData();
   return updateContact(params.contactId, {
-    favorite: formData.get('favorite') === 'true',
+    favourite: formData.get('favourite') === 'true',
     updatedOn: new Date()
   });
 };
@@ -39,9 +39,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   invariant(params.contactId, 'Missing contactId param');
   const contact = await getContact(params.contactId);
-  console.log(contact, 'cccccccccccc');
   if (!contact) {
-    console.log('dddddddddddddddddddd');
     throw new Response('Not Found', { status: 404 });
   }
   return json({ contact });
@@ -69,7 +67,7 @@ export default function Contact() {
           ) : (
             <i>No Name</i>
           )}{' '}
-          <Favorite contact={contact} />
+          <Favourite contact={contact} />
         </h1>
 
         {contact.linkedInProfile ? (
@@ -102,19 +100,19 @@ export default function Contact() {
   );
 }
 
-function Favorite({ contact }: { contact: Pick<ContactRecord, 'favorite'> }) {
+function Favourite({ contact }: { contact: Pick<ContactRecord, 'favourite'> }) {
   const fetcher = useFetcher();
-  const favorite = fetcher.formData
-    ? fetcher.formData.get('favorite') === 'true'
-    : contact.favorite;
+  const favourite = fetcher.formData
+    ? fetcher.formData.get('favourite') === 'true'
+    : contact.favourite;
 
   return (
     <fetcher.Form method="post">
       <button
-        aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
-        name="favorite"
-        value={favorite ? 'false' : 'true'}>
-        {favorite ? '★' : '☆'}
+        aria-label={favourite ? 'Remove from favorites' : 'Add to favorites'}
+        name="favourite"
+        value={favourite ? 'false' : 'true'}>
+        {favourite ? '★' : '☆'}
       </button>
     </fetcher.Form>
   );

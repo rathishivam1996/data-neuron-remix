@@ -1,7 +1,8 @@
 import type { ActionFunctionArgs } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
 import invariant from 'tiny-invariant';
-import { deleteContact } from '~/api';
+import { deleteContact } from '~/data2';
+// import { deleteContact } from '~/api';
 
 export const action = async ({ params }: ActionFunctionArgs) => {
   invariant(params.contactId, 'Missing contactId param');

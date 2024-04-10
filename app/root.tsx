@@ -13,26 +13,16 @@ import {
   useNavigation,
   useSubmit
 } from '@remix-run/react';
-import { v4 as uuidv4 } from 'uuid';
 
+import { useEffect } from 'react';
 import tailwindCss from '~/tailwind.css';
 import appCss from './app.css';
-import { useEffect } from 'react';
-// import { findAllContacts } from './api';
-import { getContacts } from './data';
+import { getContacts } from './data2';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwindCss },
   { rel: 'stylesheet', href: appCss }
 ];
-
-// export const loader = async ({ request }: LoaderFunctionArgs) => {
-//   const url = new URL(request.url);
-//   const q = url.searchParams.get('q');
-
-//   const contacts = await findAllContacts(q);
-//   return json({ contacts, q });
-// };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
@@ -42,9 +32,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export const action = async () => {
-  // const contact = await createEmptyContact();
-  const uuid = uuidv4();
-  return redirect(`/contacts/${uuid}/edit`);
+  return redirect(`/contacts/create`);
 };
 
 export default function App() {
@@ -111,7 +99,7 @@ export default function App() {
                       ) : (
                         <i>No Name</i>
                       )}{' '}
-                      {contact.favorite ? <span>★</span> : null}
+                      {contact.favourite ? <span>★</span> : null}
                     </NavLink>
                   </li>
                 ))}

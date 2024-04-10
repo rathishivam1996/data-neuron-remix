@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-export interface Contact {
+export interface ContactRecord {
   readonly uuid: string; // Required
   readonly createdOn: Date; // Required
   updatedOn: Date;
@@ -12,86 +12,97 @@ export interface Contact {
   notes?: string; // Optional
   favourite?: boolean;
 }
-export type ContactMutation = Partial<Omit<Contact, 'uuid' | 'createdOn'>>; // Optional properties for mutations
+export type ContactMutation = Partial<Omit<ContactRecord, 'uuid' | 'createdOn'>>; // Optional properties for mutations
 
-const fakeContacts: Record<string, Contact> = {};
+const fakeContacts: Record<string, ContactRecord> = {};
 
-async function create(contact: Contact): Promise<Contact> {
-  const newContact = {
-    ...contact,
-    createdOn: new Date(),
-    updatedOn: new Date()
-  };
-  fakeContacts[newContact.uuid] = newContact;
-  return newContact;
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function update(uuid: string, mutation: ContactMutation): Promise<Contact | null> {
+const delayMs = 1000;
+function log(message: string) {
+  console.log(`[${new Date().toISOString()}] ${message}`);
+}
+
+async function create(contact: ContactRecord): Promise<ContactRecord> {
+  await delay(delayMs);
+
+  fakeContacts[contact.uuid] = contact;
+  log(`Contact created: ${JSON.stringify(contact)}`);
+  return contact;
+}
+
+async function getAll(query?: string | null): Promise<ContactRecord[]> {
+  await delay(delayMs);
+
+  let contacts = Object.values(fakeContacts);
+  if (query) {
+    const lowerCaseQuery = query.toLowerCase();
+    contacts = contacts.filter(
+      (contact) =>
+        contact.firstName.toLowerCase().includes(lowerCaseQuery) ||
+        contact.lastName.toLowerCase().includes(lowerCaseQuery)
+    );
+  }
+  log(`Fetched all contacts: ${JSON.stringify(contacts)}`);
+  return contacts.sort((a, b) => b.createdOn.getTime() - a.createdOn.getTime());
+}
+
+async function get(uuid: string): Promise<ContactRecord | null> {
+  await delay(delayMs);
+  const contact = fakeContacts[uuid] || null;
+
+  log(`Fetched contact: ${JSON.stringify(contact)}`);
+  return contact;
+}
+
+async function update(uuid: string, mutation: ContactMutation): Promise<ContactRecord | null> {
+  await delay(delayMs);
+
   const existingContact = fakeContacts[uuid];
   if (!existingContact) {
     throw new Error(`No contact found for ${uuid}`);
   }
 
-  const updatedContact = { ...existingContact, ...mutation, updatedOn: new Date() };
+  const updatedContact = { ...existingContact, ...mutation };
   fakeContacts[uuid] = updatedContact;
+
+  log(`Updated contact: ${JSON.stringify(updatedContact)}`);
   return updatedContact;
 }
 
-async function createOrUpdate(uuid: string, mutation: ContactMutation): Promise<Contact> {
-  const existingContact = fakeContacts[uuid];
-  if (!existingContact) {
-    return create({ uuid, ...mutation });
-  } else {
-    return update(uuid, mutation);
-  }
-}
+async function remove(uuid: string): Promise<void> {
+  await delay(delayMs);
 
-async function getAll(query?: string | null): Promise<Contact[]> {
-  let contacts = Object.values(fakeContacts);
-  if (query) {
-    contacts = contacts.filter(
-      (contact) => contact.firstName.includes(query) || contact.lastName.includes(query)
-    );
-  }
-  return contacts.sort((a, b) => b.createdOn.getTime() - a.createdOn.getTime());
-}
-
-async function get(uuid: string): Promise<Contact | null> {
-  return fakeContacts[uuid] || null;
-}
-
-async function deleteContact(uuid: string): Promise<void> {
   delete fakeContacts[uuid];
+
+  log(`Deleted contact with uuid: ${uuid}`);
 }
-
-const initialContacts = [
-  {
-    avatarUrl: '/shivam-profile-image.jpeg',
-    firstName: 'Shivam',
-    lastName: 'Rathi',
-    linkedInProfile: 'https://www.linkedin.com/in/shivam-rathi-218993215/'
-  }
-  // Add more initial contacts here
-];
-
-async function prepopulateContacts() {
-  for (const contact of initialContacts) {
-    await create(contact);
-  }
-}
-
-(async () => {
-  await prepopulateContacts();
-  // Rest of your application logic here
-})();
 
 // Helper functions to be called from routes or actions
-export async function getContacts(query?: string | null) {
-  return getAll(query);
-}
 
 export async function createContact(contact: ContactMutation) {
-  return create(contact);
+  if (!contact.firstName || !contact.lastName) {
+    throw new Error('First name and last name are required.');
+  }
+
+  const newContact: ContactRecord = {
+    uuid: uuidv4(),
+    createdOn: new Date(),
+    updatedOn: new Date(),
+    firstName: contact.firstName,
+    lastName: contact.lastName,
+    linkedInProfile: contact.linkedInProfile,
+    avatarUrl: contact.avatarUrl,
+    notes: contact.notes,
+    favourite: contact.favourite
+  };
+  return create(newContact);
+}
+
+export async function getContacts(query?: string | null) {
+  return getAll(query);
 }
 
 export async function getContact(uuid: string) {
@@ -99,13 +110,27 @@ export async function getContact(uuid: string) {
 }
 
 export async function updateContact(uuid: string, mutation: ContactMutation) {
-  return update(uuid, mutation);
-}
-
-export async function createOrUpdateContact(uuid: string, mutation: ContactMutation) {
-  return createOrUpdate(uuid, mutation);
+  const updatedMutation = { ...mutation, updatedOn: new Date() };
+  return update(uuid, updatedMutation);
 }
 
 export async function deleteContact(uuid: string) {
-  return deleteContact(uuid);
+  return remove(uuid);
 }
+
+const initialContacts: ContactRecord[] = [
+  {
+    uuid: uuidv4(),
+    createdOn: new Date(),
+    updatedOn: new Date(),
+    firstName: 'Shivam',
+    lastName: 'Rathi',
+    linkedInProfile: 'https://www.linkedin.com/in/shivam-rathi-218993215/',
+    avatarUrl: '/shivam-profile-image.jpeg'
+  }
+  // Add more initial contacts here
+];
+
+initialContacts.forEach((contact) => {
+  fakeContacts[contact.uuid] = contact;
+});

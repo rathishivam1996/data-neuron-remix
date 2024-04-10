@@ -4,7 +4,7 @@ import { Form, useLoaderData, useNavigate } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 
 import { useState } from 'react';
-import { ContactMutation, createOrUpdate, getContact } from '~/data';
+import { ContactMutation, getContact, updateContact } from '~/data2';
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   invariant(params.contactId, 'Missing contactId param');
@@ -21,7 +21,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
     ...updates
   } as unknown as ContactMutation;
 
-  await createOrUpdate(params.contactId, contactUpdates);
+  await updateContact(params.contactId, contactUpdates);
   return redirect(`/contacts/${params.contactId}`);
 };
 
